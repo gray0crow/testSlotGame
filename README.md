@@ -40,14 +40,14 @@ Features
 How to install and run
 
 # Clone the repo
-git clone <your_repo_url>
-cd slot-machine
+git clone https://github.com/gray0crow/testSlotGame.git
+cd testSlotGame
 
 # Install dependencies
 npm install
 
 # Run in development mode
-npm run dev
+npm run start
 
 Assets like textures and sounds should be in the /assets/ folder.
 
