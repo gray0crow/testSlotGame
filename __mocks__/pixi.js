@@ -7,6 +7,12 @@ const makePoint = () => ({
   },
 });
 
+class BaseTexture {
+  constructor() {
+    this.width = 100;
+    this.height = 100;
+  }
+}
 class Sprite {
   constructor(texture) {
     this.texture = texture;
@@ -31,7 +37,33 @@ class Container {
     this.addChild = jest.fn();
     this.removeChildren = jest.fn();
     this.pivot = makePoint();
+
+    this._events = {};
+  }
+
+  on(event, cb) {
+    this._events[event] = this._events[event] || [];
+    this._events[event].push(cb);
+  }
+
+  once(event, cb) {
+    const wrapper = (...args) => {
+      cb(...args);
+      this.off(event, wrapper);
+    };
+    this.on(event, wrapper);
+  }
+
+  off(event, cb) {
+    if (!this._events[event]) return;
+    this._events[event] = this._events[event].filter(fn => fn !== cb);
+  }
+
+  emit(event, ...args) {
+    if (this._events[event]) {
+      this._events[event].forEach(fn => fn(...args));
+    }
   }
 }
 
-module.exports = { Sprite, Texture, Container };
+module.exports = {BaseTexture, Sprite, Texture, Container };

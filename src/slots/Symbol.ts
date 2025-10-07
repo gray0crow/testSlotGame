@@ -4,7 +4,7 @@ import { AssetLoader } from "../utils/AssetLoader";
 /**
  * Represents a slot machine symbol.
  * 
- * This class is now a PIXI.Container that holds:
+ * This class is a PIXI.Container that holds:
  * - The main Sprite (the texture)
  * - Optional overlays, glow, or text layers in future
  */
@@ -25,6 +25,7 @@ export class Symbol extends Container {
         // Add the sprite to the container
         this.addChild(this._sprite);
     }
+
     /** Unique identifier for this symbol type */
     public get id(): number {
         return this._symIdx;
@@ -96,18 +97,13 @@ export class Symbol extends Container {
     }
 
     /** Static config for all available symbols */
-    static readonly SYMBOL_TEXTURES: { name: string; offset: number }[] = [
+    public static readonly SYMBOL_TEXTURES: { name: string; offset: number }[] = [
         { name: "symbol1.png", offset: 0 },
         { name: "symbol2.png", offset: 0 },
         { name: "symbol3.png", offset: 15 },
         { name: "symbol4.png", offset: 15 },
         { name: "symbol5.png", offset: 0 },
     ];
-
-    /** Returns total number of defined symbols */
-    public static count(): number {
-        return Symbol.SYMBOL_TEXTURES.length;
-    }
 
     /** Creates a new Symbol instance from config */
     public static createSymbols(id: number, size: number): Symbol {

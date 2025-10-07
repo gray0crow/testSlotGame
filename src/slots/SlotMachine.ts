@@ -34,7 +34,7 @@ export class SlotMachine {
 
         this.createBackground();
         this.createReels();
-        // this.createMask();
+        this.createMask();
 
         this.initSpineAnimations();
     }
@@ -97,14 +97,6 @@ export class SlotMachine {
         //Start spin sound
         sound.play('Reel spin');
 
-        //Start each reel with a staggered delay
-        // this.startReelsSequentially()
-        //     .then(() => this.stopReelsSequentially())
-        //     .finally(() => {
-        //         this.isSpinning = false;
-        //         if (this.onSpinEnd) this.onSpinEnd();
-        //     });
-
         await this.startReelsSequentially();
         await this.stopReelsSequentially();
     }
@@ -116,10 +108,10 @@ export class SlotMachine {
         const delayMs = 200;
         for (const reel of this.reels) {
             reel.startSpin();
+
             await this.delay(delayMs);
         }
     }
-
 
     private async stopReelsSequentially(): Promise<void> {
         const delayMs = 200;
@@ -159,7 +151,7 @@ export class SlotMachine {
 
     private checkWin(): void {
         // Simple win check - just for demonstration
-        const randomWin = Math.random() < 0.3; // 30% chance of winning
+        const randomWin = Math.random() < 0.3; 
 
         if (randomWin) {
             sound.play('win');
@@ -209,11 +201,11 @@ export class SlotMachine {
             if (winSpineData) {
                 this.winAnimation = new Spine(winSpineData.spineData);
 
-                this.winAnimation.x = (REEL_HEIGHT * REEL_COUNT + REEL_SPACING * (REEL_COUNT - 1)) / 2;
-                this.winAnimation.y = (SYMBOL_SIZE * SYMBOLS_PER_REEL) / 2;
+                this.winAnimation.x = (REEL_HEIGHT * REEL_COUNT + REEL_SPACING * (REEL_COUNT -1 )) / 2 + 150;
+                this.winAnimation.y = (SYMBOL_SIZE * SYMBOLS_PER_REEL) / 2 - 40;
 
                 this.winAnimation.visible = false;
-
+         
                 this.container.addChild(this.winAnimation);
             }
         } catch (error) {
