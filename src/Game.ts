@@ -29,8 +29,6 @@ export class Game {
         this.resize = this.resize.bind(this);
 
         window.addEventListener('resize', this.resize);
-
-        this.resize();
     }
 
     public async init(): Promise<void> {
@@ -40,11 +38,22 @@ export class Game {
             this.slotMachine = new SlotMachine(this.app);
             this.app.stage.addChild(this.slotMachine.container);
 
-            this.ui = new UI(this.app, this.slotMachine);
+            this.ui = new UI(this.app);
             this.app.stage.addChild(this.ui.container);
+
+            //Connect the UI button to SlotMachine behavior
+            this.ui.onSpinClick = () => {
+                this.slotMachine.spin();
+                this.ui.setEnabled(false); // disable button while spinning
+            };
+
+            (this.slotMachine as any).onSpinEnd = () => {
+                this.ui.setEnabled(true);
+            };
 
             this.app.ticker.add(this.update.bind(this));
 
+            this.resize();
             console.log('Game initialized successfully');
         } catch (error) {
             console.error('Error initializing game:', error);
@@ -68,7 +77,6 @@ export class Game {
 
         // Calculate scale to fit the container while maintaining aspect ratio
         const scale = Math.min(w / 1280, h / 800);
-
         this.app.stage.scale.set(scale);
 
         // Center the stage

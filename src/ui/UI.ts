@@ -1,58 +1,111 @@
-import * as PIXI from 'pixi.js';
-import { SlotMachine } from '../slots/SlotMachine';
-import { AssetLoader } from '../utils/AssetLoader';
-import { sound } from '../utils/sound';
+import * as PIXI from "pixi.js";
+import { sound } from "../utils/sound";
 
+/**
+ * A simple reusable UI system 
+ */
 export class UI {
     public container: PIXI.Container;
     private app: PIXI.Application;
-    private slotMachine: SlotMachine;
     private spinButton!: PIXI.Sprite;
 
-    constructor(app: PIXI.Application, slotMachine: SlotMachine) {
+    private buttonTextures: {
+        normal: PIXI.Texture;
+        disabled: PIXI.Texture;
+    };
+
+    // External callback for click event (assigned from outside)
+    public onSpinClick?: () => void;
+
+    constructor(app: PIXI.Application) {
         this.app = app;
-        this.slotMachine = slotMachine;
         this.container = new PIXI.Container();
 
-        this.createSpinButton();
+        // Initialize texture placeholders
+        this.buttonTextures = {
+            normal: PIXI.Texture.EMPTY,
+            disabled: PIXI.Texture.EMPTY,
+        };
+
+        // Load textures once (self-contained)
+        this.preloadButtonAssets().then(() => {
+            this.createSpinButton();
+     });
     }
 
-    private createSpinButton(): void {
+    /**
+     * Loads the textures for the spin button (normal, hover, disabled).
+     */
+    private async preloadButtonAssets(): Promise<void> {
+        const assets = {
+            normal: "assets/images/button_spin.png",
+            disabled: "assets/images/button_spin_disabled.png",
+        };
+
         try {
-            this.spinButton = new PIXI.Sprite(AssetLoader.getTexture('button_spin.png'));
+            const [normal, disabled] = await Promise.all([
+                PIXI.Assets.load(assets.normal),
+                PIXI.Assets.load(assets.disabled),
+            ]);
 
-            this.spinButton.anchor.set(0.5);
-            this.spinButton.x = this.app.screen.width / 2;
-            this.spinButton.y = this.app.screen.height - 50;
-            this.spinButton.width = 150;
-            this.spinButton.height = 80;
-
-            this.spinButton.interactive = true;
-            this.spinButton.cursor = 'pointer';
-
-            this.spinButton.on('pointerdown', this.onSpinButtonClick.bind(this));
-            this.spinButton.on('pointerover', this.onButtonOver.bind(this));
-            this.spinButton.on('pointerout', this.onButtonOut.bind(this));
-
-            this.container.addChild(this.spinButton);
-
-            this.slotMachine.setSpinButton(this.spinButton);
-        } catch (error) {
-            console.error('Error creating spin button:', error);
+            this.buttonTextures.normal = normal;
+            this.buttonTextures.disabled = disabled;
+        } catch (err) {
+            console.warn("⚠️ Failed to load button textures:", err);
         }
     }
 
-    private onSpinButtonClick(): void {
-        sound.play('Spin button');
+    /**
+     * Creates the spin button and attaches UI interactions.
+     */
+    private createSpinButton(): void {
+        this.spinButton = new PIXI.Sprite(this.buttonTextures.normal);
 
-        this.slotMachine.spin();
+        this.spinButton.anchor.set(0.5);
+        this.spinButton.anchor.set(0.5);
+       // this.spinButton.width = 200;
+       // this.spinButton.height = 120;
+       this.spinButton.x = 650;
+       this.spinButton.y = 780
+
+        this.spinButton.interactive = true;
+        this.spinButton.cursor = "pointer";
+
+        // Pointer events
+        this.spinButton.on("pointerover", this.onButtonOver.bind(this));
+        this.spinButton.on("pointerout", this.onButtonOut.bind(this));
+        this.spinButton.on("pointerdown", this.onButtonClick.bind(this));
+
+        this.container.addChild(this.spinButton);
     }
 
-    private onButtonOver(event: PIXI.FederatedPointerEvent): void {
-        (event.currentTarget as PIXI.Sprite).scale.set(1.05);
+    /**
+     * Handles button click.
+     * Plays sound and triggers external callback if defined.
+     */
+    private onButtonClick(): void {
+        sound.play("Spin button");
+        this.setEnabled(false); // optional: disable after click
+        if (this.onSpinClick) this.onSpinClick();
     }
 
-    private onButtonOut(event: PIXI.FederatedPointerEvent): void {
-        (event.currentTarget as PIXI.Sprite).scale.set(1.0);
+    /** Button hover effect */
+    private onButtonOver(): void {
+        this.spinButton.texture = this.buttonTextures.normal;
+        this.spinButton.scale.set(1.05);
+    }
+
+    /** Reset button when pointer leaves */
+    private onButtonOut(): void {
+        this.spinButton.texture = this.buttonTextures.normal;
+        this.spinButton.scale.set(1.0);
+    }
+
+    /**
+     * Enables or disables the spin button externally.
+     */
+    public setEnabled(enabled: boolean): void {
+        this.spinButton.texture = enabled ? this.buttonTextures.normal : this.buttonTextures.disabled;
+        this.spinButton.interactive = enabled;
     }
 }
